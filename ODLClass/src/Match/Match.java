@@ -71,26 +71,30 @@ public class Match {
 	public String getIn_port() {
 		return in_port;
 	}
-	public void setIn_port(String in_port) {
+	public Match setIn_port(String in_port) {
 		this.in_port = in_port;
+		return this;
 	}
 	public String getIn_phy_port() {
 		return in_phy_port;
 	}
-	public void setIn_phy_port(String in_phy_port) {
+	public Match setIn_phy_port(String in_phy_port) {
 		this.in_phy_port = in_phy_port;
+		return this;
 	}
 	public String getIpv4_source() {
 		return ipv4_source;
 	}
-	public void setIpv4_source(String ipv4_source) {
+	public Match setIpv4_source(String ipv4_source) {
 		this.ipv4_source = ipv4_source;
+		return this;
 	}
 	public String getIpv4_destination() {
 		return ipv4_destination;
 	}
-	public void setIpv4_destination(String ipv4_destination) {
+	public Match setIpv4_destination(String ipv4_destination) {
 		this.ipv4_destination = ipv4_destination;
+		return this;
 	}
 	public String getTcp_source_port() {
 		return tcp_source_port;

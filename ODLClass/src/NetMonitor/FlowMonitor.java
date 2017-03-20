@@ -141,6 +141,7 @@ class FlowMonTask implements Runnable{
 					flowTypeMap.put(Protocol_Type.Valueof(0),datapair);
 			}
 		}
+		
 	}
 	
 	public Map<Protocol_Type, Pair<Long>> getFlowTypeMap() {

@@ -7,26 +7,26 @@
  */
 package NetMonitor;
 
-public class Pair<T> {
+public class Pair<T,O> {
 	private T left;
-	private T right;
+	private O right;
 	public T getLeft() {
 		return left;
 	}
 	public void setLeft(T left) {
 		this.left = left;
 	}
-	public T getRight() {
+	public O getRight() {
 		return right;
 	}
-	public void setRight(T right) {
+	public void setRight(O right) {
 		this.right = right;
 	}
 	public Pair(){
 		left=null;
 		right=null;
 	}
-	public Pair(T left,T right){
+	public Pair(T left,O right){
 		this.left=left;
 		this.right=right;
 		

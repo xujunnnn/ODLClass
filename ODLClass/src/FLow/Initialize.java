@@ -4,22 +4,57 @@ import http.Request;
 
 import java.util.ArrayList;
 
+import org.eclipse.jdt.internal.compiler.classfmt.MethodInfoWithAnnotations;
+
 import Instruction.Instruction;
 import Instruction.Instructions;
 import Match.Match;
 import NetMonitor.Protocol_Type;
+import NetWork_Topology.Node;
+import NetWork_Topology.Termination_point;
+import NetWork_Topology.Topology;
 
 public class Initialize {
     private static String ODL_IP="10.108.125.125:8181"; 
-    private ArrayList<String> nodes=new ArrayList<String>();
-    public ArrayList<String> getNodes() {
+    private ArrayList<Node> nodes=new ArrayList<Node>();
+    private ArrayList<Protocol_Type> protocol_Types=new ArrayList<>();
+    public ArrayList<Protocol_Type> getProtocol_Types() {
+		return protocol_Types;
+	}
+
+
+	public void setProtocol_Types(ArrayList<Protocol_Type> protocol_Types) {
+		this.protocol_Types = protocol_Types;
+	}
+
+
+
+	private static int id=0;
+    
+    public String getid(){
+    	String flowid=String.valueOf(id);
+    	id++;
+    	return flowid;
+    }
+    
+    
+    /**
+     * 
+     * @return
+     */
+    public Initialize addProtocol(Protocol_Type protocol_Type){
+    	this.protocol_Types.add(protocol_Type);
+    	return this;
+    }
+    
+    public ArrayList<Node> getNodes() {
 		return nodes;
 	}
-	public Initialize setNodes(ArrayList<String> nodes) {
+	public Initialize setNodes(ArrayList<Node> nodes) {
 		this.nodes = nodes;
 		return this;
 	}
-	public Initialize addNode(String node){
+	public Initialize addNode(Node node){
 		this.nodes.add(node);
 		return this;
 	}
@@ -40,64 +75,97 @@ public class Initialize {
 	 * send initflow to the node
 	 * @param node
 	 */
-    public void initFlow(String node){
-     /*
-      * flow all packet to table 3	
-      */
+    public void initFlow(Node node){
     	Flow flow=new Flow();
-    	flow.setId("0").setIdle_timeout("0").setHard_timeout("0").setPriority("200");
-    	flow.setCookie(flow.getId()).setFlow_name("initflow"+flow.getId());
-    	Match match=new Match();
-    	match.Set_Mac_Match(null,null, "2048");
+    	Match match=new Match().Set_Mac_Match(null, null, "2048");
     	Instructions instructions=new Instructions();
-    	Instruction gototable=new Instruction();
-    	gototable.Set_Go_To_Table_Id("3").setOrder("0");
-    	instructions.addInstruction(gototable);
-    	flow.setInstructions(instructions).setMatch(match).setTable_id("0").Send(node);
+    	Instruction instruction=new Instruction().Set_Go_To_Table_Id("3").setOrder("0");
+    	instructions.addInstruction(instruction);
     	/*
-    	 * flow2 all packet to table 5
+    	 * send flow gototable 3
     	 */
-    	Flow flow2=new Flow().setId("0").setHard_timeout("0").setIdle_timeout("0").setPriority("2");
-    	flow2.setCookie(flow2.getId()).setFlow_name("initflow"+flow2.getId());
+    	flow.setId(getid())
+    		.setFlow_name("initflow"+flow.getId())
+    		.setCookie(flow.getId())
+    		.setHard_timeout("0")
+    		.setIdle_timeout("0")
+    		.setPriority("210")
+    		.setTable_id("0")
+    		.setMatch(match)
+    		.setInstructions(instructions)
+    		.Send(node.getNode_id());
     	Instructions instructions2=new Instructions();
-    	Instruction gototable5=new Instruction();
-    	gototable5.Set_Go_To_Table_Id("5").setOrder("0");
-    	instructions2.addInstruction(gototable5);
-    	flow2.setInstructions(instructions2).setMatch(match).setTable_id("3").Send(node);
+    	Instruction instruction2=new Instruction().Set_Go_To_Table_Id("5").setOrder("0");
     	/*
-    	 * flow1 measure icmp packet
+    	 * send flow gototable 5
     	 */
-    	Flow flow1=new Flow().setId("1").setHard_timeout("0").setIdle_timeout("0");
-    	flow1.setFlow_name("icmpflow"+flow1.getId()).setPriority("250").setCookie(flow1.getId());
-    	match.Set_Ip_Match("17", null,null, null);
-    	flow1.setInstructions(instructions).setMatch(match).setTable_id("0").Send(node);
+    	flow.setId(getid())
+    		.setFlow_name("initflow"+flow.getId())
+    		.setCookie(flow.getId())
+    		.setInstructions(instructions2)
+    		.setTable_id("3")
+    		.Send(node.getNode_id());
+    	
+    	Topology topology=new Topology().update();
     	/*
-    	 * flow17 measure udp packet
-    	 */
-    	Flow flow17=new Flow().setId("17").setHard_timeout("0").setIdle_timeout("0");
-    	flow17.setFlow_name("udpflow"+flow17.getId()).setPriority("250").setCookie(flow17.getId());
-    	match.Set_Ip_Match("17", null,null, null);
-    	flow17.setInstructions(instructions).setMatch(match).setTable_id("0").Send(node);
-    	/*
-    	 * flow6 measure tcp packet
-    	 */
-    	Flow flow6=new Flow().setId("6").setHard_timeout("0").setIdle_timeout("0");
-    	flow6.setFlow_name("tcpflow"+flow6.getId()).setPriority("250").setCookie(flow6.getId());
-    	match.Set_Ip_Match("6", null,null, null);
-    	flow17.setInstructions(instructions).setMatch(match).setTable_id("0").Send(node);
+    	  for(Protocol_Type p:protocol_Types){
+    		System.out.println(p);
+    	for(Termination_point t:topology.get_ports_to_host(node)){
+    		
+    			System.out.println(p);
+    		Flow flow2=new Flow();
+    		System.out.println("protocol-type      "+String.valueOf(p.value()));
+    		Match match2=new Match().Set_Ip_Match(String.valueOf(p.value()), null, null,null).setIn_phy_port(t.getTp_id());
+    		
+    		flow2.setId(getid())
+    			 .setFlow_name("initflow"+flow.getId())
+    			 .setCookie(flow.getId())
+    			 .setIdle_timeout("0")
+    			 .setHard_timeout("0")
+    			 .setPriority("210")
+    			 .setTable_id("0")
+    			 .setInstructions(instructions)
+    			 .setMatch(match2)
+    			 .Send(node.getNode_id());
+    			 
+    		}		 
+    	}
+    	
+    		*/
+    	ArrayList<Termination_point> termination_points=topology.get_ports_to_host(node);
+    	for(Termination_point t:termination_points){
+    		for(Protocol_Type p:protocol_Types){
+    			Flow flow2=new Flow();
+        		Match match2=new Match().Set_Ip_Match(String.valueOf(p.value()), null, null,null)
+        								.setIn_port(t.getTp_id())
+        								.Set_Mac_Match(null, null, "2048");
+        		flow2.setId(getid())
+        			 .setFlow_name("initflow"+flow2.getId())
+        			 .setCookie(flow2.getId())
+        			 .setIdle_timeout("0")
+        			 .setHard_timeout("0")
+        			 .setPriority("210")
+        			 .setTable_id("0")
+        			 .setInstructions(instructions)
+        			 .setMatch(match2)
+        			 .Send(node.getNode_id());
+    		}
+    	}
+    		
     }
+   	
+   
+    
     /**
      * Init the switch
      */
 	public void init() {
 		// TODO Auto-generated method stub
-		
-		for(String n:nodes){
-		//	delete_Table(n, "0");
-		//	delete_Table(n, "3");
+		Topology topology=new Topology().update();
+		for(Node n:topology.get_access_node()){
+			System.out.println(n.getNode_id());
 			initFlow(n);
 		}
-
 	}
 	
 
